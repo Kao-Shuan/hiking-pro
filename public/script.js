@@ -152,42 +152,6 @@ function handleGpxUpload() {
     reader.readAsText(file);
 }
 
-const map_trail = L.map('map').setView([24, 121], 8);
-
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors'
-}).addTo(map_trail);
-
-const fileInput = document.getElementById('gpx-file-input');
-
-fileInput.addEventListener('change', function (e) {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = function (event) {
-        const gpxText = event.target.result;
-
-        // 將 gpx 文字餵給 leaflet-gpx（支援文字）
-        const gpxLayer = new L.GPX(gpxText, {
-            async: true,
-            marker_options: {
-                startIconUrl: 'https://unpkg.com/leaflet-gpx@1.7.0/pin-icon-start.png',
-                endIconUrl: 'https://unpkg.com/leaflet-gpx@1.7.0/pin-icon-end.png',
-                shadowUrl: 'https://unpkg.com/leaflet-gpx@1.7.0/pin-shadow.png'
-            }
-        });
-
-        gpxLayer.on('loaded', function (e) {
-            map_trail.fitBounds(e.target.getBounds());
-        });
-
-        gpxLayer.addTo(map_trail);
-    };
-
-    reader.readAsText(file);
-});
-
 // ==========================================================
 // --- 路線規劃頁邏輯 (plan.html) ---
 // ==========================================================
@@ -236,45 +200,41 @@ async function loadPlanPage() {
     }
 }
 
-// 建立地圖物件，中心為桃山，縮放等級 13
-const map_plan = L.map('map').setView([24.414261, 121.307170], 14);
 
-// OSM Tile layer
+// 地圖載入
+const map_trail = L.map('map').setView([24, 121], 8);
+
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap'
-}).addTo(map_plan);
+    attribution: '© OpenStreetMap contributors'
+}).addTo(map_trail);
 
-// 用 async/await 載入 Flask 回傳的 GeoJSON
-async function loadTrailGeojson() {
-    try {
-        const res = await fetch('/api/map/coordinates');
-        const geojson = await res.json();
+const fileInput = document.getElementById('gpx-file-input');
 
-        // 載入 GeoJSON 到 Leaflet
-        L.geoJSON(geojson, {
-            onEachFeature: function (feature, layer) {
-                // 標示點的 popup
-                if (feature.geometry.type === "Point" && feature.properties.label) {
-                    layer.bindPopup(feature.properties.label);
-                }
-            },
-            style: function (feature) {
-                // 如果是路線線段，給藍色線條樣式
-                if (feature.geometry.type === "LineString") {
-                    return { color: "blue", weight: 3 };
-                }
-            },
-            pointToLayer: function (feature, latlng) {
-                // 使用 marker 來畫點（非預設 circleMarker）
-                return L.marker(latlng);
+fileInput.addEventListener('change', function (e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function (event) {
+        const gpxText = event.target.result;
+
+        // 將 gpx 文字餵給 leaflet-gpx（支援文字）
+        const gpxLayer = new L.GPX(gpxText, {
+            async: true,
+            marker_options: {
+                startIconUrl: 'libs/leaflet/images/marker-icon.png'
             }
-        }).addTo(map_plan);
-    } catch (err) {
-        console.error("無法載入 geojson", err);
-    }
-}
+        });
 
-loadTrailGeojson();
+        gpxLayer.on('loaded', function (e) {
+            map_trail.fitBounds(e.target.getBounds());
+        });
+
+        gpxLayer.addTo(map_trail);
+    };
+
+    reader.readAsText(file);
+});
 
 // === 全域或可重用的輔助函式 (Helper Functions) ===
 
