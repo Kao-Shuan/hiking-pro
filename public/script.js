@@ -222,7 +222,9 @@ fileInput.addEventListener('change', function (e) {
         const gpxLayer = new L.GPX(gpxText, {
             async: true,
             marker_options: {
-                startIconUrl: 'libs/leaflet/images/marker-icon.png'
+                startIconUrl: 'libs/leaflet/images/icon_blue.png',
+                shadowUrl: '/libs/leaflet/images/marker-shadow.png',
+                endIconUrl: '/libs/leaflet/images/icon_red.png',
             }
         });
 
