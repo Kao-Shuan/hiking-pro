@@ -67,9 +67,6 @@ async function loadTrailDetails() {
         // const weather = await weatherResponse.json();
         // displayWeatherForecast(weather);
 
-        // 4. *** 關鍵：為 GPX 分析按鈕設定點擊事件 ***
-        document.getElementById('gpx-analyze-btn').addEventListener('click', handleGpxUpload);
-
     } catch (error) {
         console.error('無法載入步道詳情:', error);
         document.getElementById('trail-name').textContent = '找不到步道資料';
@@ -94,63 +91,63 @@ function displayTrailInfo(trail) {
 }
 
 // *** 使用客戶端解析 GPX，不再依賴後端 API ***
-function handleGpxUpload() {
-    const fileInput = document.getElementById('gpx-file-input');
-    const resultArea = document.getElementById('gpx-result');
+// function handleGpxUpload() {
+//     const fileInput = document.getElementById('gpx-file-input');
+//     const resultArea = document.getElementById('gpx-result');
 
-    if (fileInput.files.length === 0) {
-        resultArea.innerHTML = '<p style="color: red;">請先選擇一個 GPX 檔案。</p>';
-        return;
-    }
+//     if (fileInput.files.length === 0) {
+//         resultArea.innerHTML = '<p style="color: red;">請先選擇一個 GPX 檔案。</p>';
+//         return;
+//     }
 
-    const file = fileInput.files[0];
-    const reader = new FileReader();
+//     const file = fileInput.files[0];
+//     const reader = new FileReader();
 
-    reader.onload = (e) => {
-        try {
-            const gpxContent = e.target.result;
-            const gpx = new gpxParser(); // 使用 gpx-parser-js
-            gpx.parse(gpxContent);
+//     reader.onload = (e) => {
+//         try {
+//             const gpxContent = e.target.result;
+//             const gpx = new gpxParser(); // 使用 gpx-parser-js
+//             gpx.parse(gpxContent);
 
-            if (!gpx.tracks || gpx.tracks.length === 0) {
-                throw new Error("此 GPX 檔案不包含軌跡 (track) 資料。");
-            }
+//             if (!gpx.tracks || gpx.tracks.length === 0) {
+//                 throw new Error("此 GPX 檔案不包含軌跡 (track) 資料。");
+//             }
 
-            const track = gpx.tracks[0];
-            const distanceKm = (track.distance.total / 1000).toFixed(2);
-            const ascentM = Math.round(track.elevation.pos);
-            const descentM = Math.round(Math.abs(track.elevation.neg));
+//             const track = gpx.tracks[0];
+//             const distanceKm = (track.distance.total / 1000).toFixed(2);
+//             const ascentM = Math.round(track.elevation.pos);
+//             const descentM = Math.round(Math.abs(track.elevation.neg));
 
-            const startTime = new Date(track.points[0].time);
-            const endTime = new Date(track.points[track.points.length - 1].time);
-            const durationMs = endTime - startTime;
-            const hours = Math.floor(durationMs / 3600000);
-            const minutes = Math.round((durationMs % 3600000) / 60000);
-            const totalTime = `${hours} 小時 ${minutes} 分鐘`;
+//             const startTime = new Date(track.points[0].time);
+//             const endTime = new Date(track.points[track.points.length - 1].time);
+//             const durationMs = endTime - startTime;
+//             const hours = Math.floor(durationMs / 3600000);
+//             const minutes = Math.round((durationMs % 3600000) / 60000);
+//             const totalTime = `${hours} 小時 ${minutes} 分鐘`;
 
-            // 將結果顯示在畫面上
-            resultArea.innerHTML = `
-                <h4>您的軌跡分析結果：</h4>
-                <div class="stats-grid">
-                    <div class="stat-item"><div class="label">總時間</div><div class="value">${totalTime}</div></div>
-                    <div class="stat-item"><div class="label">總距離</div><div class="value">${distanceKm} km</div></div>
-                    <div class="stat-item"><div class="label">總爬升</div><div class="value">${ascentM} m</div></div>
-                    <div class="stat-item"><div class="label">總下降</div><div class="value">${descentM} m</div></div>
-                </div>
-            `;
-        } catch (error) {
-            console.error("GPX 分析出錯:", error);
-            resultArea.innerHTML = `<p style="color: red;">分析出錯: ${error.message}</p>`;
-        }
-    };
+//             // 將結果顯示在畫面上
+//             resultArea.innerHTML = `
+//                 <h4>您的軌跡分析結果：</h4>
+//                 <div class="stats-grid">
+//                     <div class="stat-item"><div class="label">總時間</div><div class="value">${totalTime}</div></div>
+//                     <div class="stat-item"><div class="label">總距離</div><div class="value">${distanceKm} km</div></div>
+//                     <div class="stat-item"><div class="label">總爬升</div><div class="value">${ascentM} m</div></div>
+//                     <div class="stat-item"><div class="label">總下降</div><div class="value">${descentM} m</div></div>
+//                 </div>
+//             `;
+//         } catch (error) {
+//             console.error("GPX 分析出錯:", error);
+//             resultArea.innerHTML = `<p style="color: red;">分析出錯: ${error.message}</p>`;
+//         }
+//     };
 
-    reader.onerror = () => {
-        resultArea.innerHTML = `<p style="color: red;">讀取檔案失敗。</p>`;
-    };
+//     reader.onerror = () => {
+//         resultArea.innerHTML = `<p style="color: red;">讀取檔案失敗。</p>`;
+//     };
 
-    resultArea.innerHTML = '<p>分析中，請稍候...</p>';
-    reader.readAsText(file);
-}
+//     resultArea.innerHTML = '<p>分析中，請稍候...</p>';
+//     reader.readAsText(file);
+// }
 
 // ==========================================================
 // --- 路線規劃頁邏輯 (plan.html) ---
@@ -237,6 +234,248 @@ fileInput.addEventListener('change', function (e) {
 
     reader.readAsText(file);
 });
+
+// ====== IndexedDB 操作 ======
+const DB_NAME = 'offline-map-db';
+const TILE_STORE = 'tiles';
+const STATIC_STORE = 'static';
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = function (e) {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(TILE_STORE)) db.createObjectStore(TILE_STORE);
+      if (!db.objectStoreNames.contains(STATIC_STORE)) db.createObjectStore(STATIC_STORE);
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function saveTileToDB(key, blob) {
+  try {
+    const db = await openDB();
+    const tx = db.transaction(TILE_STORE, 'readwrite');
+    tx.objectStore(TILE_STORE).put(blob, key);
+    await tx.complete;
+    // 新增 debug log
+    console.log('已存入tile:', key);
+  } catch (e) {
+    console.error('存tile進IndexedDB失敗:', key, e);
+  }
+}
+
+async function getTileFromDB(key) {
+  const db = await openDB();
+  return new Promise((resolve) => {
+    const req = db.transaction(TILE_STORE).objectStore(TILE_STORE).get(key);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => resolve(null);
+  });
+}
+
+async function saveStaticToDB(key, blob) {
+  const db = await openDB();
+  const tx = db.transaction(STATIC_STORE, 'readwrite');
+  tx.objectStore(STATIC_STORE).put(blob, key);
+  return tx.complete;
+}
+
+async function getStaticFromDB(key) {
+  const db = await openDB();
+  return new Promise((resolve) => {
+    const req = db.transaction(STATIC_STORE).objectStore(STATIC_STORE).get(key);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => resolve(null);
+  });
+}
+
+// ====== GPX 上傳後分析tile範圍 ======
+async function handleGpxUpload(file) {
+  // 取得進度條元素
+  const progressDiv = document.getElementById('download-progress');
+  const progressBar = document.getElementById('progress-bar');
+  const progressText = document.getElementById('progress-text');
+  if (progressDiv) {
+    progressDiv.style.display = '';
+    progressBar.value = 0;
+    progressText.textContent = '開始下載圖磚...';
+  }
+
+  // 1. 解析GPX取得經緯度範圍
+  const text = await file.text();
+  const parser = new DOMParser();
+  const xml = parser.parseFromString(text, "application/xml");
+  const lats = Array.from(xml.querySelectorAll("trkpt")).map(pt => parseFloat(pt.getAttribute("lat")));
+  const lons = Array.from(xml.querySelectorAll("trkpt")).map(pt => parseFloat(pt.getAttribute("lon")));
+  const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+  const minLon = Math.min(...lons), maxLon = Math.max(...lons);
+
+  // 2. 計算所需z/x/y範圍 (以15~16級為例)
+  function lon2tile(lon, z) { return Math.floor((lon + 180) / 360 * Math.pow(2, z)); }
+  function lat2tile(lat, z) {
+    return Math.floor(
+      (1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * Math.pow(2, z)
+    );
+  }
+  const zooms = [15, 16];
+  let tiles = [];
+  zooms.forEach(z => {
+    const x1 = lon2tile(minLon, z), x2 = lon2tile(maxLon, z);
+    const y1 = lat2tile(maxLat, z), y2 = lat2tile(minLat, z);
+    for (let x = x1; x <= x2; x++) {
+      for (let y = y1; y <= y2; y++) {
+        tiles.push({ z, x, y });
+      }
+    }
+  });
+
+  // 3. 呼叫API下載圖磚zip
+  if (progressText) progressText.textContent = '下載圖磚壓縮包...';
+  const resp = await fetch('/api/tiles/download', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ tiles })
+  });
+
+  if (!resp.ok) {
+    if (progressDiv) progressDiv.style.display = 'none';
+    let msg = '下載圖磚時發生錯誤';
+    try {
+      const err = await resp.json();
+      msg = err.message || msg;
+    } catch (e) {}
+    alert(msg);
+    return;
+  }
+
+  const zipBlob = await resp.blob();
+
+  // 嘗試用 JSZip 解壓，若不是 zip 會報錯
+  let zip;
+  try {
+    zip = await JSZip.loadAsync(zipBlob);
+  } catch (e) {
+    if (progressDiv) progressDiv.style.display = 'none';
+    alert('伺服器回傳的不是有效的圖磚壓縮包，請稍後再試。');
+    return;
+  }
+  const fileNames = Object.keys(zip.files);
+  if (fileNames.length === 0) {
+    if (progressDiv) progressDiv.style.display = 'none';
+    alert('圖磚壓縮包內沒有任何檔案，請檢查API回傳。');
+    return;
+  }
+  let count = 0;
+  const pngFiles = fileNames.filter(fn => fn.endsWith('.png'));
+  const total = pngFiles.length;
+  for (const [idx, filename] of pngFiles.entries()) {
+    const blob = await zip.files[filename].async('blob');
+    await saveTileToDB(filename, blob);
+    count++;
+    if (progressBar) progressBar.value = Math.round((count / total) * 100);
+    if (progressText) progressText.textContent = `正在儲存圖磚 (${count}/${total})`;
+  }
+  if (progressBar) progressBar.value = 100;
+  if (progressText) progressText.textContent = '完成！';
+  setTimeout(() => {
+    if (progressDiv) progressDiv.style.display = 'none';
+  }, 1200);
+  alert(`離線地圖圖磚已存入本機！共存入 ${count} 張圖磚。`);
+}
+
+// ====== Leaflet 自訂tileLayer從IndexedDB取tile ======
+L.TileLayer.IndexedDB = L.TileLayer.extend({
+  getTileUrl: function (coords) {
+    return `${coords.z}/${coords.x}/${coords.y}.png`;
+  },
+  createTile: function (coords, done) {
+    const key = this.getTileUrl(coords);
+    const img = document.createElement('img');
+    img.alt = '';
+    img.setAttribute('role', 'presentation');
+    getTileFromDB(key).then(blob => {
+      if (blob) {
+        img.src = URL.createObjectURL(blob);
+      } else {
+        // fallback: 線上取得
+        img.src = `https://tile.openstreetmap.org/${key}`;
+      }
+      done(null, img);
+    });
+    return img;
+  }
+});
+
+// ====== 存靜態資源進IndexedDB (首次啟動時) ======
+async function cacheStatics() {
+  const statics = [
+    '/index.html', '/plan.html', '/trail.html', '/script.js', '/styles.css',
+    '/manifest.json', '/libs/leaflet/leaflet.css', '/libs/leaflet/leaflet.js',
+    '/libs/leaflet/images/marker-icon.png', '/libs/leaflet/images/marker-icon-2x.png',
+    '/libs/leaflet/images/marker-shadow.png'
+  ];
+  for (const url of statics) {
+    const resp = await fetch(url);
+    if (resp.ok) {
+      const blob = await resp.blob();
+      await saveStaticToDB(url, blob);
+    }
+  }
+}
+
+// ====== trail.html GPX上傳事件掛載 ======
+document.addEventListener('DOMContentLoaded', () => {
+  // ...existing code...
+  const gpxInput = document.getElementById('gpx-file-input');
+  const downloadMapBtn = document.getElementById('download-map-btn');
+  let lastGpxFile = null;
+
+  if (gpxInput) {
+    gpxInput.addEventListener('change', (e) => {
+      lastGpxFile = e.target.files[0];
+    });
+  }
+  if (downloadMapBtn) {
+    downloadMapBtn.addEventListener('click', async () => {
+      if (!lastGpxFile) {
+        alert('請先選擇一個 GPX 檔案');
+        return;
+      }
+      await handleGpxUpload(lastGpxFile);
+    });
+  }
+  // 首次啟動時存靜態資源
+  cacheStatics();
+  // ...existing code...
+});
+
+// Service Worker 與 IndexedDB 協作：監聽 SW 請求
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', async (event) => {
+    const data = event.data;
+    if (data && data.type === 'GET_IDB') {
+      let result = null;
+      if (data.dbType === 'tiles') {
+        result = await getTileFromDB(data.key);
+      } else if (data.dbType === 'static') {
+        result = await getStaticFromDB(data.key);
+      }
+      if (result) {
+        // 讀出 ArrayBuffer
+        const arrayBuffer = await result.arrayBuffer();
+        event.ports[0].postMessage({
+          found: true,
+          buffer: arrayBuffer,
+          contentType: result.type
+        }, [arrayBuffer]);
+      } else {
+        event.ports[0].postMessage({ found: false });
+      }
+    }
+  });
+}
 
 // === 全域或可重用的輔助函式 (Helper Functions) ===
 
