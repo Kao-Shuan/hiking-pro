@@ -1,15 +1,15 @@
 // 唯一的 DOM 載入完成事件監聽器，作為整個應用的進入點
 document.addEventListener('DOMContentLoaded', () => {
-    const path = window.location.pathname;
-    // 根據 URL 路徑，執行對應頁面的初始化函式
-    if (path.includes('trail.html')) {
-        loadTrailDetails();
-    } else if (path.includes('plan.html')) {
-        loadPlanPage();
-    } else {
-        // 預設載入首頁
-        loadTrailCards();
-    }
+  const path = window.location.pathname;
+  // 根據 URL 路徑，執行對應頁面的初始化函式
+  if (path.includes('trail.html')) {
+    loadTrailDetails();
+  } else if (path.includes('plan.html')) {
+    loadPlanPage();
+  } else {
+    // 預設載入首頁
+    loadTrailCards();
+  }
 });
 
 
@@ -17,14 +17,14 @@ document.addEventListener('DOMContentLoaded', () => {
 // --- 首頁邏輯 (index.html) ---
 // ==========================================================
 async function loadTrailCards() {
-    try {
-        // 假設您有一個後端 API 提供步道列表
-        const response = await fetch('/api/trails');
-        if (!response.ok) throw new Error('Network response was not ok');
-        const trails = await response.json();
-        const grid = document.getElementById('trail-grid');
-        if (!grid) return;
-        grid.innerHTML = trails.map(trail => `
+  try {
+    // 假設您有一個後端 API 提供步道列表
+    const response = await fetch('/api/trails');
+    if (!response.ok) throw new Error('Network response was not ok');
+    const trails = await response.json();
+    const grid = document.getElementById('trail-grid');
+    if (!grid) return;
+    grid.innerHTML = trails.map(trail => `
             <a href="/trail.html?id=${trail.id}" class="trail-card">
                 <div class="card-content">
                     <h3>${trail.name}</h3>
@@ -33,11 +33,11 @@ async function loadTrailCards() {
                 </div>
             </a>
         `).join('');
-    } catch (error) {
-        console.error('無法載入步道列表:', error);
-        const grid = document.getElementById('trail-grid');
-        if (grid) grid.innerHTML = `<p>無法載入步道列表，請稍後再試。</p>`;
-    }
+  } catch (error) {
+    console.error('無法載入步道列表:', error);
+    const grid = document.getElementById('trail-grid');
+    if (grid) grid.innerHTML = `<p>無法載入步道列表，請稍後再試。</p>`;
+  }
 }
 
 
@@ -45,42 +45,42 @@ async function loadTrailCards() {
 // --- 步道詳情頁邏輯 (trail.html) ---
 // ==========================================================
 async function loadTrailDetails() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const trailId = urlParams.get('id');
-    if (!trailId) {
-        window.location.href = '/';
-        return;
-    }
+  const urlParams = new URLSearchParams(window.location.search);
+  const trailId = urlParams.get('id');
+  if (!trailId) {
+    window.location.href = '/';
+    return;
+  }
 
-    try {
-        // 1. 獲取步道基本資料
-        // 假設您有一個後端 API `/api/trails/:id`
-        const trailRes = await fetch(`/api/trails/${trailId}`);
-        if (!trailRes.ok) throw new Error('Trail not found');
-        const trail = await trailRes.json();
+  try {
+    // 1. 獲取步道基本資料
+    // 假設您有一個後端 API `/api/trails/:id`
+    const trailRes = await fetch(`/api/trails/${trailId}`);
+    if (!trailRes.ok) throw new Error('Trail not found');
+    const trail = await trailRes.json();
 
-        // 2. 顯示步道資訊
-        displayTrailInfo(trail);
+    // 2. 顯示步道資訊
+    displayTrailInfo(trail);
 
-        // 3. 獲取天氣資訊 (可選)
-        // const weatherResponse = await fetch(`/api/weather/${trail.weatherStation.locationName}`);
-        // const weather = await weatherResponse.json();
-        // displayWeatherForecast(weather);
+    // 3. 獲取天氣資訊 (可選)
+    // const weatherResponse = await fetch(`/api/weather/${trail.weatherStation.locationName}`);
+    // const weather = await weatherResponse.json();
+    // displayWeatherForecast(weather);
 
-    } catch (error) {
-        console.error('無法載入步道詳情:', error);
-        document.getElementById('trail-name').textContent = '找不到步道資料';
-    }
+  } catch (error) {
+    console.error('無法載入步道詳情:', error);
+    document.getElementById('trail-name').textContent = '找不到步道資料';
+  }
 }
 
 function displayTrailInfo(trail) {
-    document.title = `${trail.name} - 步道詳情`;
-    document.getElementById('trail-name').textContent = trail.name;
-    document.getElementById('trail-location').textContent = trail.location;
-    document.getElementById('planning-link').href = `/plan.html?id=${trail.id}`; // 確保連結正確
+  document.title = `${trail.name} - 步道詳情`;
+  document.getElementById('trail-name').textContent = trail.name;
+  document.getElementById('trail-location').textContent = trail.location;
+  document.getElementById('planning-link').href = `/plan.html?id=${trail.id}`; // 確保連結正確
 
-    const statsGrid = document.getElementById('stats-grid');
-    statsGrid.innerHTML = `
+  const statsGrid = document.getElementById('stats-grid');
+  statsGrid.innerHTML = `
         <div class="stat-item"><i class="fa-solid fa-clock"></i><div class="label">總時間</div><div class="value">${trail.stats.totalTime}</div></div>
         <div class="stat-item"><i class="fa-solid fa-route"></i><div class="label">總移動距離</div><div class="value">${trail.stats.distance}</div></div>
         <div class="stat-item"><i class="fa-solid fa-arrow-trend-up"></i><div class="label">總爬升高度</div><div class="value">${trail.stats.ascent}</div></div>
@@ -153,48 +153,48 @@ function displayTrailInfo(trail) {
 // --- 路線規劃頁邏輯 (plan.html) ---
 // ==========================================================
 async function loadPlanPage() {
-    // === 1. 元素選擇 ===
-    const trailNameEl = document.getElementById('plan-trail-name');
-    const calculateBtn = document.getElementById('calculate-time-btn');
-    const gpxFileInput = document.getElementById('gpx-file-input');
-    const gpxFileNameSpan = document.getElementById('gpx-file-name');
-    const timelineContainer = document.getElementById('gpx-timeline-container');
-    const gpxSummary = document.getElementById('gpx-summary');
+  //     // === 1. 元素選擇 ===
+  //     const trailNameEl = document.getElementById('plan-trail-name');
+  //     const calculateBtn = document.getElementById('calculate-time-btn');
+  //     const gpxFileInput = document.getElementById('gpx-file-input');
+  //     const gpxFileNameSpan = document.getElementById('gpx-file-name');
+  //     const timelineContainer = document.getElementById('gpx-timeline-container');
+  //     const gpxSummary = document.getElementById('gpx-summary');
 
-    // === 2. 初始資料載入 (可選，如果需要的話) ===
-    // 如果 plan.html 需要顯示步道名稱，則保留這段
-    const urlParams = new URLSearchParams(window.location.search);
-    const trailId = urlParams.get('id');
-    if (trailId) {
-        try {
-            const trailRes = await fetch(`/api/trails/${trailId}`);
-            if (!trailRes.ok) throw new Error('Trail not found for planning');
-            const trail = await trailRes.json();
-            trailNameEl.textContent = `規劃: ${trail.name}`;
+  // // === 2. 初始資料載入 (可選，如果需要的話) ===
+  // // 如果 plan.html 需要顯示步道名稱，則保留這段
+  // const urlParams = new URLSearchParams(window.location.search);
+  // const trailId = urlParams.get('id');
+  // if (trailId) {
+  //     try {
+  //         const trailRes = await fetch(`/api/trails/${trailId}`);
+  //         if (!trailRes.ok) throw new Error('Trail not found for planning');
+  //         const trail = await trailRes.json();
+  //         trailNameEl.textContent = `規劃: ${trail.name}`;
 
-            // 為時間計算機設定事件
-            if (calculateBtn) {
-                calculateBtn.addEventListener('click', () => calculateEstimatedTime(trail));
-            }
-        } catch (error) {
-            trailNameEl.textContent = '無法載入步道資訊';
-            console.error('無法載入步道 для規劃頁面:', error);
-        }
-    } else {
-        trailNameEl.textContent = '路線規劃'; // 提供一個通用標題
-    }
+  //         // 為時間計算機設定事件
+  //         if (calculateBtn) {
+  //             calculateBtn.addEventListener('click', () => calculateEstimatedTime(trail));
+  //         }
+  //     } catch (error) {
+  //         trailNameEl.textContent = '無法載入步道資訊';
+  //         console.error('無法載入步道 для規劃頁面:', error);
+  //     }
+  // } else {
+  //     trailNameEl.textContent = '路線規劃'; // 提供一個通用標題
+  // }
 
-    // === 3. GPX 上傳與時間軸功能設定 ===
-    if (gpxFileInput) {
-        gpxFileInput.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (!file) return;
-            gpxFileNameSpan.textContent = file.name;
-            const reader = new FileReader();
-            reader.onload = (e) => processGpxForTimeline(e.target.result, timelineContainer, gpxSummary);
-            reader.readAsText(file);
-        });
-    }
+  // === 3. GPX 上傳與時間軸功能設定 ===
+  if (gpxFileInput) {
+    gpxFileInput.addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+      gpxFileNameSpan.textContent = file.name;
+      const reader = new FileReader();
+      reader.onload = (e) => processGpxForTimeline(e.target.result, timelineContainer, gpxSummary);
+      reader.readAsText(file);
+    });
+  }
 }
 
 
@@ -202,37 +202,37 @@ async function loadPlanPage() {
 const map_trail = L.map('map').setView([24, 121], 8);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors'
+  attribution: '© OpenStreetMap contributors'
 }).addTo(map_trail);
 
 const fileInput = document.getElementById('gpx-file-input');
 
 fileInput.addEventListener('change', function (e) {
-    const file = e.target.files[0];
-    if (!file) return;
+  const file = e.target.files[0];
+  if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = function (event) {
-        const gpxText = event.target.result;
+  const reader = new FileReader();
+  reader.onload = function (event) {
+    const gpxText = event.target.result;
 
-        // 將 gpx 文字餵給 leaflet-gpx（支援文字）
-        const gpxLayer = new L.GPX(gpxText, {
-            async: true,
-            marker_options: {
-                startIconUrl: 'libs/leaflet/images/icon_blue.png',
-                shadowUrl: '/libs/leaflet/images/marker-shadow.png',
-                endIconUrl: '/libs/leaflet/images/icon_red.png',
-            }
-        });
+    // 將 gpx 文字餵給 leaflet-gpx（支援文字）
+    const gpxLayer = new L.GPX(gpxText, {
+      async: true,
+      marker_options: {
+        startIconUrl: 'libs/leaflet/images/icon_blue.png',
+        shadowUrl: '/libs/leaflet/images/marker-shadow.png',
+        endIconUrl: '/libs/leaflet/images/icon_red.png',
+      }
+    });
 
-        gpxLayer.on('loaded', function (e) {
-            map_trail.fitBounds(e.target.getBounds());
-        });
+    gpxLayer.on('loaded', function (e) {
+      map_trail.fitBounds(e.target.getBounds());
+    });
 
-        gpxLayer.addTo(map_trail);
-    };
+    gpxLayer.addTo(map_trail);
+  };
 
-    reader.readAsText(file);
+  reader.readAsText(file);
 });
 
 // ====== IndexedDB 操作 ======
@@ -345,7 +345,7 @@ async function handleGpxUpload(file) {
     try {
       const err = await resp.json();
       msg = err.message || msg;
-    } catch (e) {}
+    } catch (e) { }
     alert(msg);
     return;
   }
@@ -481,88 +481,88 @@ if ('serviceWorker' in navigator) {
 
 // plan.html 專用的時間預估計算機
 function calculateEstimatedTime(trail) {
-    const speed = parseFloat(document.getElementById('pace-speed').value);
-    const ascentRate = parseFloat(document.getElementById('pace-ascent').value);
-    const distanceKm = parseFloat(trail.stats.distance);
-    const ascentM = parseFloat(trail.stats.ascent);
-    if (isNaN(speed) || isNaN(ascentRate)) {
-        alert('請輸入有效的數字');
-        return;
-    }
-    const timeForDistance = distanceKm / speed;
-    const timeForAscent = ascentM / ascentRate;
-    const totalHours = timeForDistance + timeForAscent;
-    const hours = Math.floor(totalHours);
-    const minutes = Math.round((totalHours - hours) * 60);
-    const resultDiv = document.getElementById('plan-result');
-    resultDiv.innerHTML = `預估您的健行時間約為：<br><strong>${hours} 小時 ${minutes} 分鐘</strong>`;
+  const speed = parseFloat(document.getElementById('pace-speed').value);
+  const ascentRate = parseFloat(document.getElementById('pace-ascent').value);
+  const distanceKm = parseFloat(trail.stats.distance);
+  const ascentM = parseFloat(trail.stats.ascent);
+  if (isNaN(speed) || isNaN(ascentRate)) {
+    alert('請輸入有效的數字');
+    return;
+  }
+  const timeForDistance = distanceKm / speed;
+  const timeForAscent = ascentM / ascentRate;
+  const totalHours = timeForDistance + timeForAscent;
+  const hours = Math.floor(totalHours);
+  const minutes = Math.round((totalHours - hours) * 60);
+  const resultDiv = document.getElementById('plan-result');
+  resultDiv.innerHTML = `預估您的健行時間約為：<br><strong>${hours} 小時 ${minutes} 分鐘</strong>`;
 }
 
 // plan.html 專用的 GPX 解析與時間軸渲染
 function processGpxForTimeline(gpxData, timelineContainer, gpxSummary) {
-    try {
-        const gpx = new gpxParser();
-        gpx.parse(gpxData);
-        let pointsForTimeline = [];
-        if (gpx.waypoints && gpx.waypoints.length > 0) {
-            pointsForTimeline = gpx.waypoints;
-        } else if (gpx.tracks && gpx.tracks.length > 0 && gpx.tracks[0].points.length > 0) {
-            pointsForTimeline = sampleTrackPoints(gpx.tracks[0].points, 5);
-        } else {
-            throw new Error("GPX 檔案不包含航點 (waypoints) 或軌跡 (tracks)。");
-        }
-        timelineContainer.innerHTML = '';
-        gpxSummary.style.display = 'flex';
-        renderSummary(gpx, pointsForTimeline);
-        renderTimeline(gpx, pointsForTimeline, timelineContainer);
-    } catch (error) {
-        console.error('GPX 解析失敗:', error);
-        timelineContainer.innerHTML = `<p style="color: red;">GPX 檔案解析失敗: ${error.message}</p>`;
-        gpxSummary.style.display = 'none';
+  try {
+    const gpx = new gpxParser();
+    gpx.parse(gpxData);
+    let pointsForTimeline = [];
+    if (gpx.waypoints && gpx.waypoints.length > 0) {
+      pointsForTimeline = gpx.waypoints;
+    } else if (gpx.tracks && gpx.tracks.length > 0 && gpx.tracks[0].points.length > 0) {
+      pointsForTimeline = sampleTrackPoints(gpx.tracks[0].points, 5);
+    } else {
+      throw new Error("GPX 檔案不包含航點 (waypoints) 或軌跡 (tracks)。");
     }
+    timelineContainer.innerHTML = '';
+    gpxSummary.style.display = 'flex';
+    renderSummary(gpx, pointsForTimeline);
+    renderTimeline(gpx, pointsForTimeline, timelineContainer);
+  } catch (error) {
+    console.error('GPX 解析失敗:', error);
+    timelineContainer.innerHTML = `<p style="color: red;">GPX 檔案解析失敗: ${error.message}</p>`;
+    gpxSummary.style.display = 'none';
+  }
 }
 
 function sampleTrackPoints(trackPoints, numSamples = 5) {
-    const totalPoints = trackPoints.length;
-    if (totalPoints <= numSamples) return trackPoints.map((p, i) => ({ ...p, name: `軌跡點 ${i + 1}` }));
-    const sampledPoints = [];
-    const indices = new Set([0, totalPoints - 1]);
-    for (let i = 1; i < numSamples - 1; i++) {
-        indices.add(Math.floor(totalPoints * (i / (numSamples - 1))));
-    }
-    [...indices].sort((a, b) => a - b).forEach((index, i) => {
-        const point = trackPoints[index];
-        let name = `路線 ${Math.round((index / totalPoints) * 100)}% 處`;
-        if (i === 0) name = "路線起點";
-        if (i === indices.size - 1) name = "路線終點";
-        sampledPoints.push({ ...point, name: name });
-    });
-    return sampledPoints;
+  const totalPoints = trackPoints.length;
+  if (totalPoints <= numSamples) return trackPoints.map((p, i) => ({ ...p, name: `軌跡點 ${i + 1}` }));
+  const sampledPoints = [];
+  const indices = new Set([0, totalPoints - 1]);
+  for (let i = 1; i < numSamples - 1; i++) {
+    indices.add(Math.floor(totalPoints * (i / (numSamples - 1))));
+  }
+  [...indices].sort((a, b) => a - b).forEach((index, i) => {
+    const point = trackPoints[index];
+    let name = `路線 ${Math.round((index / totalPoints) * 100)}% 處`;
+    if (i === 0) name = "路線起點";
+    if (i === indices.size - 1) name = "路線終點";
+    sampledPoints.push({ ...point, name: name });
+  });
+  return sampledPoints;
 }
 
 function renderSummary(gpx, timelinePoints) {
-    const fullTrack = gpx.tracks[0];
-    const totalDistance = (fullTrack?.distance.total / 1000).toFixed(1) || 0;
-    const totalAscent = Math.round(fullTrack?.elevation.pos) || 0;
-    const startTime = new Date(timelinePoints[0].time);
-    const endTime = new Date(timelinePoints[timelinePoints.length - 1].time);
-    const totalMilliseconds = endTime - startTime;
-    const hours = Math.floor(totalMilliseconds / 3600000);
-    const minutes = Math.round((totalMilliseconds % 3600000) / 60000);
-    document.getElementById('total-time').textContent = `${hours} h ${minutes} m`;
-    document.getElementById('total-distance').textContent = `${totalDistance} km`;
-    document.getElementById('total-ascent').textContent = `${totalAscent} m`;
+  const fullTrack = gpx.tracks[0];
+  const totalDistance = (fullTrack?.distance.total / 1000).toFixed(1) || 0;
+  const totalAscent = Math.round(fullTrack?.elevation.pos) || 0;
+  const startTime = new Date(timelinePoints[0].time);
+  const endTime = new Date(timelinePoints[timelinePoints.length - 1].time);
+  const totalMilliseconds = endTime - startTime;
+  const hours = Math.floor(totalMilliseconds / 3600000);
+  const minutes = Math.round((totalMilliseconds % 3600000) / 60000);
+  document.getElementById('total-time').textContent = `${hours} h ${minutes} m`;
+  document.getElementById('total-distance').textContent = `${totalDistance} km`;
+  document.getElementById('total-ascent').textContent = `${totalAscent} m`;
 }
 
 function renderTimeline(gpx, points, container) {
-    points.forEach((point, index) => {
-        const item = document.createElement('div');
-        item.className = 'timeline-item';
-        const time = new Date(point.time);
-        const formattedTime = `${String(time.getHours()).padStart(2, '0')}:${String(time.getMinutes()).padStart(2, '0')}`;
-        item.innerHTML = `...`;
-        container.appendChild(item);
-        if (index < points.length - 1) {
-        }
-    });
+  points.forEach((point, index) => {
+    const item = document.createElement('div');
+    item.className = 'timeline-item';
+    const time = new Date(point.time);
+    const formattedTime = `${String(time.getHours()).padStart(2, '0')}:${String(time.getMinutes()).padStart(2, '0')}`;
+    item.innerHTML = `...`;
+    container.appendChild(item);
+    if (index < points.length - 1) {
+    }
+  });
 }

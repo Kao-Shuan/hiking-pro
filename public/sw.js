@@ -8,9 +8,15 @@ const urlsToCache = [
   "/manifest.json",
   '/libs/leaflet/leaflet.css',
   '/libs/leaflet/leaflet.js',
+  '/libs/leaflet/gpx.min.js',
   '/libs/leaflet/images/marker-icon.png',
   '/libs/leaflet/images/marker-icon-2x.png',
   '/libs/leaflet/images/marker-shadow.png',
+  '/libs/leaflet/images/icon_blue.png',
+  '/libs/leaflet/images/icon_red.png',
+  '/libs/leaflet/images/icon_yellow.png',
+  '/icons/icon-192.png',
+  '/icons/icon-512.png',
   // "/桃山瀑布.gpx"
 ];
 
